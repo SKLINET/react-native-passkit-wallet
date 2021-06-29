@@ -50,6 +50,49 @@ RCT_EXPORT_METHOD(addPass:(NSString *)base64Encoded
   });
 }
 
+
+RCT_EXPORT_METHOD(addPasses:(NSArray *)arrayOfBase64Encoded
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejector:(RCTPromiseRejectBlock)reject) {
+
+  NSMutableArray *passesMutableArray = [[NSMutableArray alloc] initWithCapacity:[arrayOfBase64Encoded count]];
+
+  for (int i = 0; i < [arrayOfBase64Encoded count]; i++) {
+    NSData *data = [[NSData alloc] initWithBase64EncodedString:[arrayOfBase64Encoded objectAtIndex:i] options:NSUTF8StringEncoding];
+    NSError *error;
+    PKPass *pass = [[PKPass alloc] initWithData:data error:&error];
+
+    [passesMutableArray addObject:pass];
+  }
+  
+  NSArray *passesArray = [passesMutableArray copy];
+  
+  if (error) {
+    reject(@"", @"Failed to create pass.", error);
+    return;
+  }
+  
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UIApplication *sharedApplication = RCTSharedApplication();
+    UIWindow *window = sharedApplication.keyWindow;
+    if (window) {
+      UIViewController *rootViewController = window.rootViewController;
+      if (rootViewController) {
+        PKAddPassesViewController *addPassesViewController = [[PKAddPassesViewController alloc] initWithPasses:passesArray];
+        addPassesViewController.delegate = self;
+        [rootViewController presentViewController:addPassesViewController animated:YES completion:^{
+          // Succeeded
+          resolve(nil);
+        }];
+        return;
+      }
+    }
+    
+    reject(@"", @"Failed to present PKAddPassesViewController.", nil);
+  });
+}
+
+
 - (NSDictionary *)constantsToExport {
   PKAddPassButton *addPassButton = [[PKAddPassButton alloc] initWithAddPassButtonStyle:PKAddPassButtonStyleBlack];
   [addPassButton layoutIfNeeded];
