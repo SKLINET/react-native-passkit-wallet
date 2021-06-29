@@ -62,15 +62,17 @@ RCT_EXPORT_METHOD(addPasses:(NSArray *)arrayOfBase64Encoded
     NSError *error;
     PKPass *pass = [[PKPass alloc] initWithData:data error:&error];
 
+    if (error) {
+      reject(@"", @"Failed to create pass.", error);
+      return;
+    }
+
     [passesMutableArray addObject:pass];
   }
   
   NSArray *passesArray = [passesMutableArray copy];
   
-  if (error) {
-    reject(@"", @"Failed to create pass.", error);
-    return;
-  }
+  
   
   dispatch_async(dispatch_get_main_queue(), ^{
     UIApplication *sharedApplication = RCTSharedApplication();
