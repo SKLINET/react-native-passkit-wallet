@@ -64,7 +64,7 @@ react-native link react-native-passkit-wallet
       <application ...>
         ...
     +   <provider
-    +     android:name="android.support.v4.content.FileProvider"
+    +     android:name="androidx.core.content.FileProvider"
     +     android:authorities="com.yourcompany.fileprovider"
     +     android:grantUriPermissions="true"
     +     android:exported="false"
